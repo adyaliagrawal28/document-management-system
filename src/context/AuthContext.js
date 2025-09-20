@@ -3,14 +3,21 @@ import { createContext, useState } from "react";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(null);
+  const [token, setToken] = useState(() => {
+    
+    return localStorage.getItem("authToken") || null;
+  });
 
   const login = (newToken) => {
-    setToken(newToken);
+    
+    const tokenToUse = newToken || "mock-token-for-testing";
+    setToken(tokenToUse);
+    localStorage.setItem("authToken", tokenToUse);
   };
 
   const logout = () => {
     setToken(null);
+    localStorage.removeItem("authToken");
   };
 
   return (

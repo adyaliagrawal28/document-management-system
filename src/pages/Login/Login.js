@@ -6,7 +6,6 @@ import loginImage from "../../assets/login-illustrain.svg";
 import { generateOtp, validateOtp } from "../../services/api";
 import { AuthContext } from "../../context/AuthContext";
 
-
 function Login() {
   const [mobile, setMobile] = useState("");
   const [otp, setOtp] = useState("");
@@ -17,47 +16,38 @@ function Login() {
   const navigate = useNavigate();
 
   const handleSendOtp = async (e) => {
-  e.preventDefault();
-  if (!mobile.match(/^\d{10}$/)) {
-    setError("Please enter a valid 10-digit mobile number");
-    return;
-  }
+    e.preventDefault();
+    if (!mobile.match(/^\d{10}$/)) {
+      setError("Please enter a valid 10-digit mobile number");
+      return;
+    }
 
-  try {
+    try {
+      setError("");
+      const result = await generateOtp(mobile);
+      console.log("OTP generation response:", result);
+      setOtpSent(true);
+    } catch (err) {
+      console.error("API error:", err);
+      setError(err.message || "Failed to generate OTP");
+    }
+  };
+
+
+  const handleVerifyOtp = (e) => {
+    e.preventDefault();
+
+    if (!otp) {
+      setError("Please enter OTP");
+      return;
+    }
+
     setError("");
-    const result = await generateOtp(mobile);
-    console.log("OTP generation response:", result);
-    setOtpSent(true);
-  } catch (err) {
-    setError(err.message || "Failed to generate OTP");
-  }
-};
 
+    login(); // This will use the mock token from AuthContext
+    navigate("/upload"); // Redirect to Upload page
+  };
 
-  const handleVerifyOtp = async (e) => {
-  e.preventDefault();
-  if (!otp) {
-    setError("Please enter OTP");
-    return;
-  }
-
-  try {
-    setError("");
-    const result = await validateOtp(mobile, otp);
-    console.log("OTP validation response:", result);
-
-    // Save token in context
-    login(result.token);
-
-    // Optional: also save in localStorage for persistence
-    localStorage.setItem("authToken", result.token);
-
-    // Redirect to upload page
-    navigate("/upload");
-  } catch (err) {
-    setError(err.message || "OTP verification failed");
-  }
-};
 
 
   return (
