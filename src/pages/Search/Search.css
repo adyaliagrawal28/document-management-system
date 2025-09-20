@@ -1,9 +1,9 @@
-.admin-page {
-  max-width: 600px;
+.search-page {
+  max-width: 700px;
   margin: 2rem auto;
 }
 
-.admin-header {
+.search-header {
   background-color: #561ba3 !important;
   color: white !important;
   padding: 1rem;
@@ -13,7 +13,7 @@
   border-top-right-radius: 0.5rem;
 }
 
-.admin-page .card-body {
+.search-page .card-body {
   background-color: white;
   padding: 2rem;
 }

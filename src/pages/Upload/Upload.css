@@ -1,0 +1,61 @@
+.upload-page {
+  max-width: 700px;
+  margin: 2rem auto;
+}
+
+.upload-page .card-header.upload-header {
+  background-color: #561ba3 !important; /* violet header */
+  color: white !important;
+  padding: 1rem;
+  font-weight: 600;
+  font-size: 1.3rem;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
+.upload-page .card-body {
+  background-color: white;
+  padding: 2rem;
+}
+
+button[type="submit"] {
+  background-color: #561ba3;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+button[type="submit"]:hover {
+  background-color: #7e3fcf;
+}
+
+input[type="file"] {
+  padding: 0.5rem;
+}
+
+.alert {
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+body {
+  background-color: #f3e5f9; /* light violet background */
+}
+
+/* Tags styling */
+.tag-input-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.tags-display {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.tag-badge {
+  cursor: pointer;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+}

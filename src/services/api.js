@@ -27,7 +27,6 @@ export const validateOtp = async (mobile, otp) => {
   }
 };
 
-
 export const fetchTags = async (token) => {
   try {
     const response = await axios.get(`${BASE_URL}/tags`, {
