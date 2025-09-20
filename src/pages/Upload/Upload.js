@@ -4,12 +4,32 @@ import { AuthContext } from "../../context/AuthContext";
 import axios from "axios";
 import "./Upload.css";
 
-const BASE_URL = "https://"; // replace with your API base URL
+const BASE_URL = "https://apis.allsoft.co/api/documentManagement/";
 
 const majorCategories = ["Personal", "Professional"];
 const minorData = {
   Personal: ["John", "Tom", "Emily"],
   Professional: ["Accounts", "HR", "IT", "Finance"],
+};
+
+
+const majorMapping = {
+  Personal: "Company",        // backend expects "Company" for Personal
+  Professional: "Company",    // backend expects "Company" for Professional
+};
+
+const minorMapping = {
+  Personal: {
+    John: "Work Order",
+    Tom: "Invoice",
+    Emily: "Report",
+  },
+  Professional: {
+    Accounts: "Finance",
+    HR: "HR Doc",
+    IT: "IT Doc",
+    Finance: "Finance Doc",
+  },
 };
 
 function Upload() {
@@ -72,13 +92,26 @@ function Upload() {
     }
 
     setError("");
+    setSuccess("");
+
+    // Convert date to DD-MM-YYYY
+    const formattedDate = date.split("-").reverse().join("-");
+
+    // Convert tags to array of objects
+    const formattedTags = tags.map((tag) => ({ tag_name: tag }));
+
+    const payload = {
+      major_head: majorMapping[selectedMajor],
+      minor_head: minorMapping[selectedMajor][selectedMinor],
+      document_date: formattedDate,
+      document_remarks: remarks,
+      tags: formattedTags,
+      user_id: "nitin", // hardcoded for now
+    };
+
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("date", date);
-    formData.append("major_head", selectedMajor);
-    formData.append("minor_head", selectedMinor);
-    formData.append("tags", tags.join(",")); // comma-separated for backend
-    formData.append("remarks", remarks);
+    formData.append("data", JSON.stringify(payload));
 
     try {
       const response = await axios.post(`${BASE_URL}/saveDocumentEntry`, formData, {
@@ -88,23 +121,21 @@ function Upload() {
         },
       });
 
+      console.log("Upload response:", response.data);
       if (response.data.status) {
         setSuccess("File uploaded successfully!");
-        setError("");
-        setFile(null);
-        setDate("");
         setSelectedMajor("");
         setSelectedMinor("");
+        setDate("");
+        setFile(null);
         setTags([]);
         setRemarks("");
       } else {
         setError(response.data.data || "Upload failed");
-        setSuccess("");
       }
     } catch (err) {
       console.error("Upload error:", err.response || err);
       setError(err.response?.data?.data || "Network or server error during upload");
-      setSuccess("");
     }
   };
 
@@ -116,7 +147,6 @@ function Upload() {
         {success && <Alert variant="success">{success}</Alert>}
 
         <Form onSubmit={handleSubmit}>
-          {/* Date */}
           <Form.Group className="mb-3">
             <Form.Label>Date</Form.Label>
             <Form.Control type="date" value={date} onChange={(e) => setDate(e.target.value)} />
@@ -128,9 +158,7 @@ function Upload() {
             <Form.Select value={selectedMajor} onChange={(e) => setSelectedMajor(e.target.value)}>
               <option value="">Select Major Category</option>
               {majorCategories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
+                <option key={cat} value={cat}>{cat}</option>
               ))}
             </Form.Select>
           </Form.Group>
@@ -141,9 +169,7 @@ function Upload() {
               <Form.Select value={selectedMinor} onChange={(e) => setSelectedMinor(e.target.value)}>
                 <option value="">Select {selectedMajor === "Personal" ? "Name" : "Department"}</option>
                 {minorData[selectedMajor].map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
+                  <option key={item} value={item}>{item}</option>
                 ))}
               </Form.Select>
             </Form.Group>
@@ -175,7 +201,6 @@ function Upload() {
             </div>
           </Form.Group>
 
-          {/* Remarks */}
           <Form.Group className="mb-3">
             <Form.Label>Remarks</Form.Label>
             <Form.Control
@@ -186,15 +211,12 @@ function Upload() {
             />
           </Form.Group>
 
-          {/* File */}
           <Form.Group className="mb-3">
             <Form.Label>File</Form.Label>
             <Form.Control type="file" onChange={handleFileChange} />
           </Form.Group>
 
-          <Button type="submit" className="w-100">
-            Upload
-          </Button>
+          <Button type="submit" className="w-100">Upload</Button>
         </Form>
       </div>
     </div>
