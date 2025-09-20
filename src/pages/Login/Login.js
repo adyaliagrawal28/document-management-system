@@ -1,7 +1,11 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Form, Button, Alert } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import "./Login.css";
 import loginImage from "../../assets/login-illustrain.svg";
+import { generateOtp, validateOtp } from "../../services/api";
+import { AuthContext } from "../../context/AuthContext";
+
 
 function Login() {
   const [mobile, setMobile] = useState("");
@@ -9,24 +13,52 @@ function Login() {
   const [otpSent, setOtpSent] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSendOtp = () => {
-    if (!mobile.match(/^\d{10}$/)) {
-      setError("Please enter a valid 10-digit mobile number");
-      return;
-    }
-    setError("");
-    console.log("OTP sent to:", mobile);
-    setOtpSent(true);
-  };
+  const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-  const handleVerifyOtp = () => {
-    if (!otp) {
-      setError("Please enter OTP");
-      return;
-    }
+  const handleSendOtp = async (e) => {
+  e.preventDefault();
+  if (!mobile.match(/^\d{10}$/)) {
+    setError("Please enter a valid 10-digit mobile number");
+    return;
+  }
+
+  try {
     setError("");
-    console.log("OTP verified:", otp);
-  };
+    const result = await generateOtp(mobile);
+    console.log("OTP generation response:", result);
+    setOtpSent(true);
+  } catch (err) {
+    setError(err.message || "Failed to generate OTP");
+  }
+};
+
+
+  const handleVerifyOtp = async (e) => {
+  e.preventDefault();
+  if (!otp) {
+    setError("Please enter OTP");
+    return;
+  }
+
+  try {
+    setError("");
+    const result = await validateOtp(mobile, otp);
+    console.log("OTP validation response:", result);
+
+    // Save token in context
+    login(result.token);
+
+    // Optional: also save in localStorage for persistence
+    localStorage.setItem("authToken", result.token);
+
+    // Redirect to upload page
+    navigate("/upload");
+  } catch (err) {
+    setError(err.message || "OTP verification failed");
+  }
+};
+
 
   return (
     <div className="login-page">

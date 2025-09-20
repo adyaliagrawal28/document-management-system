@@ -5,6 +5,7 @@ import Admin from "./pages/Admin/Admin";
 import Upload from "./pages/Upload/Upload";
 import Search from "./pages/Search/Search";
 import Preview from "./pages/Preview/Preview";
+import "./App.css";
 
 function App() {
   return (
