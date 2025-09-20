@@ -1,8 +1,8 @@
 import { useState, useEffect, useContext } from "react";
 import { Form, Button, Alert } from "react-bootstrap";
-import "./Upload.css";
-import axios from "axios";
 import { AuthContext } from "../../context/AuthContext";
+import axios from "axios";
+import "./Upload.css";
 
 const BASE_URL = "https://apis.allsoft.co/api/documentManagement/"; 
 
@@ -13,7 +13,7 @@ const minorData = {
 };
 
 function Upload() {
-  const { token } = useContext(AuthContext); // get token from context
+  const { token } = useContext(AuthContext);
 
   const [selectedMajor, setSelectedMajor] = useState("");
   const [selectedMinor, setSelectedMinor] = useState("");
@@ -35,48 +35,49 @@ function Upload() {
       setError("");
     } else {
       setError("Only image and PDF files are allowed");
-      setFile(null);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!date || !selectedMajor || !selectedMinor || !file) {
       setError("Please fill all required fields and select a file");
       return;
     }
 
-    setError("");
-    setSuccess("");
+    if (!token) {
+      setError("You are not logged in or token is missing");
+      return;
+    }
 
-    // Prepare form data
+    setError("");
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", file); 
     formData.append("date", date);
     formData.append("major_head", selectedMajor);
     formData.append("minor_head", selectedMinor);
+    formData.append("tags", JSON.stringify(tags)); 
     formData.append("remarks", remarks);
-    formData.append("tags", JSON.stringify(tags)); // send tags as array
 
     try {
       const response = await axios.post(`${BASE_URL}/saveDocumentEntry`, formData, {
         headers: {
-          "Authorization": `Bearer ${token}`,
+          "token": token, // backend expects this key exactly
           "Content-Type": "multipart/form-data"
         }
+
       });
-      setSuccess("File uploaded successfully");
-      console.log(response.data);
-      // Reset form
-      setDate("");
-      setSelectedMajor("");
-      setSelectedMinor("");
-      setTags([]);
-      setRemarks("");
-      setFile(null);
+
+      console.log("Upload response:", response.data);
+      if (response.data.status) {
+        setSuccess("File uploaded successfully!");
+      } else {
+        setError(response.data.data || "Upload failed");
+      }
     } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.message || "Failed to upload file");
+      console.error("Upload error:", err.response || err);
+      setError(err.response?.data?.data || "Network or server error during upload");
     }
   };
 
@@ -89,11 +90,7 @@ function Upload() {
       <Form onSubmit={handleSubmit}>
         <Form.Group className="mb-3">
           <Form.Label>Date</Form.Label>
-          <Form.Control
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
+          <Form.Control type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </Form.Group>
 
         <Form.Group className="mb-3">
@@ -126,7 +123,6 @@ function Upload() {
             value={tags.join(", ")}
             onChange={(e) => setTags(e.target.value.split(",").map(tag => tag.trim()))}
           />
-          <small className="text-muted">Enter new or existing tags separated by commas</small>
         </Form.Group>
 
         <Form.Group className="mb-3">
