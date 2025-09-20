@@ -9,11 +9,11 @@ export const AuthProvider = ({ children }) => {
   });
 
   const login = (newToken) => {
-    
-    const tokenToUse = newToken || "mock-token-for-testing";
-    setToken(tokenToUse);
-    localStorage.setItem("authToken", tokenToUse);
+    if (!newToken) return; // don’t allow undefined token
+    setToken(newToken);
+    localStorage.setItem("authToken", newToken);
   };
+
 
   const logout = () => {
     setToken(null);

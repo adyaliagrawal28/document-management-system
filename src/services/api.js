@@ -1,35 +1,30 @@
 import axios from "axios";
 
-
-const BASE_URL = "https://apis.allsoft.co/api/documentManagement/";
+const BASE_URL = "https://apis.allsoft.co/api/documentManagement/"; // replace with your backend URL
 
 export const generateOtp = async (mobile) => {
   try {
-    const response = await axios.post(`${BASE_URL}/generateOTP`, { mobile });
+    const response = await axios.post(`${BASE_URL}/generateOTP`, 
+      { mobile_number: mobile },  // <-- use the key expected by backend
+      { headers: { "Content-Type": "application/json" } }
+    );
     return response.data; 
   } catch (error) {
     throw error.response?.data || { message: "Failed to generate OTP" };
   }
 };
 
+
 export const validateOtp = async (mobile, otp) => {
   try {
-    const response = await axios.post(`${BASE_URL}/validateOTP`, { mobile, otp });
+    const response = await axios.post(`${BASE_URL}/validateOTP`, 
+      { mobile_number: mobile, otp },  // <-- match backend keys
+      { headers: { "Content-Type": "application/json" } }
+    );
     return response.data; 
   } catch (error) {
     throw error.response?.data || { message: "OTP validation failed" };
   }
-
-    /*
-  try {
-    const result = await validateOtp(mobile, otp);
-    login(result.token);
-    navigate("/upload");
-  } catch (err) {
-    setError(err.message || "OTP verification failed");
-  }
-  */
-
 };
 
 

@@ -22,19 +22,23 @@ function Login() {
       return;
     }
 
+    setError("");
     try {
-      setError("");
-      const result = await generateOtp(mobile);
-      console.log("OTP generation response:", result);
-      setOtpSent(true);
+      const response = await generateOtp(mobile);
+      console.log("Generate OTP response:", response); // Debug
+      if (response.status) {
+        setOtpSent(true);
+      } else {
+        setError(response.data || "Failed to generate OTP");
+      }
     } catch (err) {
-      console.error("API error:", err);
-      setError(err.message || "Failed to generate OTP");
+      console.error(err);
+      setError("Failed to generate OTP (network or server error)");
     }
   };
 
 
-  const handleVerifyOtp = (e) => {
+  const handleVerifyOtp = async (e) => {
     e.preventDefault();
 
     if (!otp) {
@@ -43,12 +47,19 @@ function Login() {
     }
 
     setError("");
-
-    login(); // This will use the mock token from AuthContext
-    navigate("/upload"); // Redirect to Upload page
+    try {
+      const result = await validateOtp(mobile, otp);
+      if (result.status) {
+        login(result.data.token); // Store real token
+        navigate("/upload");
+      } else {
+        setError(result.data || "OTP verification failed");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("OTP verification failed (network or server error)");
+    }
   };
-
-
 
   return (
     <div className="login-page">
