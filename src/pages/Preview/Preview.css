@@ -4,7 +4,7 @@
 }
 
 .preview-page .card-header {
-  background-color: #561ba3 !important; 
+  background-color: #561ba3 !important;
   color: white !important;
   padding: 1rem;
   font-weight: 600;
@@ -18,43 +18,22 @@
   padding: 1.5rem;
 }
 
-button {
-  transition: all 0.3s ease;
-}
-
-button:hover {
-  opacity: 0.9;
-}
-
 img, iframe {
   border: 1px solid #ddd;
   border-radius: 0.5rem;
   margin-top: 0.5rem;
 }
 
-a {
-  text-decoration: none;
-}
-
-body {
-  background-color: #f3e5f9; 
-}
-
-.badge {
-  cursor: default;
-  padding: 0.4rem 0.6rem;
-  font-size: 0.85rem;
-}
-
+/* Buttons */
 .btn-back {
-  background-color: #561ba3 !important; 
+  background-color: #561ba3 !important;
   color: white !important;
   border: none !important;
   transition: all 0.3s ease;
 }
 
 .btn-back:hover {
-  background-color: #7e3fcf !important; 
+  background-color: #7e3fcf !important;
 }
 
 .btn-download {
@@ -65,5 +44,22 @@ body {
 }
 
 .btn-download:hover {
-  background-color: #218838 !important; 
+  background-color: #218838 !important;
+}
+
+.btn-download-all {
+  background-color: #561ba3 !important;
+  color: white !important;
+  border: none !important;
+  transition: all 0.3s ease;
+}
+
+.btn-download-all:hover {
+  background-color: #7e3fcf !important;
+}
+
+.badge {
+  cursor: default;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
 }

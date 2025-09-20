@@ -1,31 +1,56 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card, Button, Badge } from "react-bootstrap";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 import "./Preview.css";
 
 function Preview() {
   const location = useLocation();
   const navigate = useNavigate();
-
   const documents = location.state?.documents;
+
+  // Download all files as ZIP
+  const downloadAll = async () => {
+    if (!documents || documents.length === 0) return;
+
+    const zip = new JSZip();
+
+    for (let doc of documents) {
+      try {
+        const response = await fetch(doc.file_url);
+        const blob = await response.blob();
+        const fileName = doc.file_url.split("/").pop();
+        zip.file(fileName, blob);
+      } catch (err) {
+        console.error(`Failed to fetch file ${doc.file_url}:`, err);
+      }
+    }
+
+    zip.generateAsync({ type: "blob" }).then((content) => {
+      saveAs(content, "documents.zip");
+    });
+  };
+
+  const formatDate = (dateStr) => (dateStr ? dateStr.split("T")[0] : "");
 
   if (!documents || documents.length === 0) {
     return <p>No documents found. Go back and try a different search.</p>;
   }
 
-  const formatDate = (dateStr) => (dateStr ? dateStr.split("T")[0] : "");
-
   return (
     <div className="preview-page container mt-4">
-     <Button className="btn-back mb-3" onClick={() => navigate(-1)}>
+     
+      <Button className="btn-back mb-3" onClick={() => navigate(-1)}>
         ← Back to Search
-    </Button>
+      </Button>
 
-      
+      <Button className="btn-download-all mb-3 ms-2" onClick={downloadAll}>
+        Download All as ZIP
+      </Button>
+
       {documents.map((doc) => (
         <Card key={doc.document_id} className="mb-3 shadow-sm">
-          <Card.Header>
-            Document {doc.row_num || doc.document_id}
-          </Card.Header>
+          <Card.Header>Document {doc.row_num || doc.document_id}</Card.Header>
           <Card.Body>
             <p><strong>Date:</strong> {formatDate(doc.document_date)}</p>
             <p><strong>Major:</strong> {doc.major_head}</p>
@@ -42,7 +67,6 @@ function Preview() {
             </p>
             <p><strong>Remarks:</strong> {doc.document_remarks || "None"}</p>
 
-            
             {doc.file_url ? (
               doc.file_url.endsWith(".pdf") ? (
                 <iframe
@@ -62,11 +86,10 @@ function Preview() {
               <p>No preview available for this file type.</p>
             )}
 
-            
             {doc.file_url && (
               <div className="mt-2">
                 <a href={doc.file_url} download>
-                    <Button className="btn-download mt-2">Download</Button>
+                  <Button className="btn-download">Download</Button>
                 </a>
               </div>
             )}
