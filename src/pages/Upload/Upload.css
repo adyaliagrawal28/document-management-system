@@ -4,7 +4,7 @@
 }
 
 .upload-page .card-header.upload-header {
-  background-color: #561ba3 !important; /* violet header */
+  background-color: #561ba3 !important; 
   color: white !important;
   padding: 1rem;
   font-weight: 600;
@@ -37,11 +37,6 @@ input[type="file"] {
   font-size: 0.9rem;
 }
 
-body {
-  background-color: #f3e5f9; /* light violet background */
-}
-
-/* Tags styling */
 .tag-input-container {
   display: flex;
   flex-direction: column;

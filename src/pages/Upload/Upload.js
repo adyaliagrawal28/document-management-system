@@ -12,26 +12,6 @@ const minorData = {
   Professional: ["Accounts", "HR", "IT", "Finance"],
 };
 
-
-const majorMapping = {
-  Personal: "Company",        // backend expects "Company" for Personal
-  Professional: "Company",    // backend expects "Company" for Professional
-};
-
-const minorMapping = {
-  Personal: {
-    John: "Work Order",
-    Tom: "Invoice",
-    Emily: "Report",
-  },
-  Professional: {
-    Accounts: "Finance",
-    HR: "HR Doc",
-    IT: "IT Doc",
-    Finance: "Finance Doc",
-  },
-};
-
 function Upload() {
   const { token } = useContext(AuthContext);
 
@@ -40,36 +20,48 @@ function Upload() {
   const [date, setDate] = useState("");
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
   const [remarks, setRemarks] = useState("");
   const [file, setFile] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  useEffect(() => setSelectedMinor(""), [selectedMajor]);
+
+  // Fetch tag suggestions
   useEffect(() => {
-    setSelectedMinor("");
-  }, [selectedMajor]);
+    const fetchTags = async () => {
+      if (!token || tagInput.trim() === "") return;
+      try {
+        const res = await axios.post(
+          `${BASE_URL}/documentTags`,
+          { term: tagInput },
+          { headers: { token } }
+        );
+        if (res.data.status) setSuggestions(res.data.data || []);
+      } catch (err) {
+        console.error("Tag fetch error:", err);
+      }
+    };
+    fetchTags();
+  }, [tagInput, token]);
 
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
     if (selected && (selected.type.includes("image") || selected.type === "application/pdf")) {
       setFile(selected);
       setError("");
-    } else {
-      setError("Only image and PDF files are allowed");
-    }
+    } else setError("Only image and PDF files are allowed");
   };
 
-  const handleAddTag = () => {
-    const newTag = tagInput.trim();
-    if (newTag && !tags.includes(newTag)) {
-      setTags([...tags, newTag]);
-    }
+  const handleAddTag = (tag) => {
+    const newTag = tag || tagInput.trim();
+    if (newTag && !tags.includes(newTag)) setTags([...tags, newTag]);
     setTagInput("");
+    setSuggestions([]);
   };
 
-  const handleRemoveTag = (tagToRemove) => {
-    setTags(tags.filter((t) => t !== tagToRemove));
-  };
+  const handleRemoveTag = (tagToRemove) => setTags(tags.filter((t) => t !== tagToRemove));
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
@@ -80,12 +72,10 @@ function Upload() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!date || !selectedMajor || !selectedMinor || !file) {
       setError("Please fill all required fields and select a file");
       return;
     }
-
     if (!token) {
       setError("You are not logged in or token is missing");
       return;
@@ -94,19 +84,16 @@ function Upload() {
     setError("");
     setSuccess("");
 
-    // Convert date to DD-MM-YYYY
-    const formattedDate = date.split("-").reverse().join("-");
-
-    // Convert tags to array of objects
+    const formattedDate = date.split("-").reverse().join("-"); // DD-MM-YYYY
     const formattedTags = tags.map((tag) => ({ tag_name: tag }));
 
     const payload = {
-      major_head: majorMapping[selectedMajor],
-      minor_head: minorMapping[selectedMajor][selectedMinor],
+      major_head: selectedMajor,
+      minor_head: selectedMinor,
       document_date: formattedDate,
       document_remarks: remarks,
       tags: formattedTags,
-      user_id: "nitin", // hardcoded for now
+      user_id: "nitin",
     };
 
     const formData = new FormData();
@@ -115,27 +102,14 @@ function Upload() {
 
     try {
       const response = await axios.post(`${BASE_URL}/saveDocumentEntry`, formData, {
-        headers: {
-          token: token,
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { token, "Content-Type": "multipart/form-data" },
       });
 
-      console.log("Upload response:", response.data);
-      if (response.data.status) {
-        setSuccess("File uploaded successfully!");
-        setSelectedMajor("");
-        setSelectedMinor("");
-        setDate("");
-        setFile(null);
-        setTags([]);
-        setRemarks("");
-      } else {
-        setError(response.data.data || "Upload failed");
-      }
+      if (response.data.status) setSuccess("File uploaded successfully!");
+      else setError(response.data.data || "Upload failed");
     } catch (err) {
       console.error("Upload error:", err.response || err);
-      setError(err.response?.data?.data || "Network or server error during upload");
+      setError(err.response?.data?.data || "Network or server error");
     }
   };
 
@@ -152,14 +126,11 @@ function Upload() {
             <Form.Control type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           </Form.Group>
 
-          {/* Major & Minor */}
           <Form.Group className="mb-3">
             <Form.Label>Category</Form.Label>
             <Form.Select value={selectedMajor} onChange={(e) => setSelectedMajor(e.target.value)}>
               <option value="">Select Major Category</option>
-              {majorCategories.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
+              {majorCategories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
             </Form.Select>
           </Form.Group>
 
@@ -168,14 +139,11 @@ function Upload() {
               <Form.Label>{selectedMajor === "Personal" ? "Name" : "Department"}</Form.Label>
               <Form.Select value={selectedMinor} onChange={(e) => setSelectedMinor(e.target.value)}>
                 <option value="">Select {selectedMajor === "Personal" ? "Name" : "Department"}</option>
-                {minorData[selectedMajor].map((item) => (
-                  <option key={item} value={item}>{item}</option>
-                ))}
+                {minorData[selectedMajor].map((item) => <option key={item} value={item}>{item}</option>)}
               </Form.Select>
             </Form.Group>
           )}
 
-          {/* Tags */}
           <Form.Group className="mb-3">
             <Form.Label>Tags</Form.Label>
             <div className="tag-input-container">
@@ -188,13 +156,15 @@ function Upload() {
               />
               <div className="tags-display">
                 {tags.map((t) => (
-                  <Badge
-                    key={t}
-                    bg="primary"
-                    className="tag-badge"
-                    onClick={() => handleRemoveTag(t)}
-                  >
+                  <Badge key={t} bg="primary" className="tag-badge" onClick={() => handleRemoveTag(t)}>
                     {t} &times;
+                  </Badge>
+                ))}
+              </div>
+              <div className="tag-suggestions">
+                {suggestions.map((s) => (
+                  <Badge key={s.tag_name} bg="secondary" className="me-1" onClick={() => handleAddTag(s.tag_name)}>
+                    {s.tag_name}
                   </Badge>
                 ))}
               </div>
@@ -203,12 +173,7 @@ function Upload() {
 
           <Form.Group className="mb-3">
             <Form.Label>Remarks</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter remarks"
-              value={remarks}
-              onChange={(e) => setRemarks(e.target.value)}
-            />
+            <Form.Control type="text" placeholder="Enter remarks" value={remarks} onChange={(e) => setRemarks(e.target.value)} />
           </Form.Group>
 
           <Form.Group className="mb-3">

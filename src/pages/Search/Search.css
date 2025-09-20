@@ -28,10 +28,6 @@ button[type="submit"]:hover {
   background-color: #7e3fcf;
 }
 
-body {
-  background-color: #f3e5f9;
-}
-
 .alert {
   border-radius: 10px;
   font-size: 0.9rem;

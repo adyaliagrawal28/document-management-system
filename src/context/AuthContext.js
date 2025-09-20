@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
   });
 
   const login = (newToken) => {
-    if (!newToken) return; // don’t allow undefined token
+    if (!newToken) return; 
     setToken(newToken);
     localStorage.setItem("authToken", newToken);
   };

@@ -17,7 +17,7 @@ function App() {
           <Route path="/admin" element={<Admin />} />
           <Route path="/upload" element={<Upload />} />
           <Route path="/search" element={<Search />} />
-          <Route path="/preview/:id" element={<Preview />} />
+          <Route path="/preview" element={<Preview />} />
         </Routes>
       </div>
     </Router>

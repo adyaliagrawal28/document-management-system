@@ -25,7 +25,7 @@ function Login() {
     setError("");
     try {
       const response = await generateOtp(mobile);
-      console.log("Generate OTP response:", response); // Debug
+      console.log("Generate OTP response:", response); 
       if (response.status) {
         setOtpSent(true);
       } else {
@@ -50,7 +50,7 @@ function Login() {
     try {
       const result = await validateOtp(mobile, otp);
       if (result.status) {
-        login(result.data.token); // Store real token
+        login(result.data.token); 
         navigate("/upload");
       } else {
         setError(result.data || "OTP verification failed");
